@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Coin Games Pro</title>
+    <style>
+        *{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; -webkit-tap-highlight-color:transparent; }
+        body{ background:#0f172a; color:white; overflow:hidden; text-align:center; height: 100vh; }
+        .hidden{display:none !important;}
+        
+        /* Topbar */
+        .topbar{ height: 50px; background:#111827; display:flex; justify-content:space-between; align-items:center; padding:0 15px; position:relative; z-index:100; border-bottom: 1px solid #1e293b; }
+        
+        /* Fixed Ad Footer with Safety Shield */
+        #adFooter { 
+            position:fixed; 
+            bottom:0; 
+            left:0; 
+            width:100%; 
+            height:60px; 
+            background:#000; 
+            z-index:9999; 
+            display:flex; 
+            justify-content:center; 
+            align-items:center; 
+            border-top:1px solid #333;
+            overflow: hidden; 
+        }
+        .ad-close {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10000;
+            line-height: 20px;
+        }
+
+        .game-container { height: calc(100vh - 110px); width: 100%; position: relative; overflow-y: auto; padding-bottom: 20px; }
+        
+        .main-title { font-size: 30px; font-weight: 900; margin: 20px 0; color: #f8fafc; text-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        /* Game Card */
+        .game-card { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; width: 100%; }
+        .game-img { width: 110px; height: auto; margin-bottom: 10px; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5)); }
+
+        /* Stylish Buttons */
+        .btn-game {
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            border: none;
+            width: 60%;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .btn-bubble { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+        .btn-racing { background: linear-gradient(135deg, #ef4444, #991b1b); }
+        .btn-game:active { transform: scale(0.95); }
+
+        /* Bubble Game UI */
+        #bubbleArea{ position:relative; width:92%; height:50vh; background:#1e293b; border-radius:15px; overflow:hidden; margin:10px auto; border:2px solid #334155; }
+        .bubble{ position:absolute; border-radius:50%; background:radial-gradient(circle,#67e8f9,#0891b2); box-shadow: 0 0 10px #22d3ee; cursor: pointer; }
+
+        /* Racing Game UI */
+        #racingGame{ background:#16a34a; height: 100%; width: 100%; position: relative; overflow:hidden; }
+        #road{ position:absolute; width:180px; height:100%; background:#333; left:50%; transform:translateX(-50%); border-left:4px solid #555; border-right:4px solid #555; }
+        .line{ position:absolute; width:6px; height:50px; background:#fff; left:50%; transform:translateX(-50%); }
+        #bike{ position:absolute; width:35px; height:65px; bottom:120px; left:75px; background:#ef4444; border-radius:6px; z-index:10; border:2px solid #fff; }
+        .enemy{ position:absolute; width:35px; height:65px; background:#2563eb; border-radius:6px; }
+
+        /* Mobile Controls */
+        #controls{ position:absolute; bottom:30px; width:100%; display:flex; justify-content:center; gap:20px; z-index:1000; }
+        .ctrl{ width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,0.3); color:white; font-size:24px; border:none; backdrop-filter: blur(5px); display:flex; justify-content:center; align-items:center; }
+        
+        /* Levels */
+        .level-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:20px; }
+        .levelBtn{ background:#2563eb; color:white; padding:10px; border-radius:10px; border:none; height:50px; font-weight:bold; cursor: pointer; box-shadow: 0 4px #1d4ed8; }
+        .levelBtn:active{ box-shadow: 0 2px #1d4ed8; transform: translateY(2px); }
+        .locked{ background:#334155 !important; opacity:0.5; box-shadow:none !important; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <span><b>COIN GAMES PRO</b></span>
+    <span>💰 <b id="coins">0</b></span>
+</div>
+
+<div class="game-container">
+    <div id="home">
+        <h1 class="main-title">SELECT GAME</h1>
+        <div class="game-card">
+            <img src="https://i.ibb.co/CpJF3t94/images-removebg-preview.png" class="game-img" alt="Bubble">
+            <button class="btn-game btn-bubble" onclick="openLevels('bubble')">Bubble Pop</button>
+        </div>
+        <div class="game-card">
+            <img src="https://i.ibb.co/67623rh3/images-1-removebg-preview.png" class="game-img" alt="Racing">
+            <button class="btn-game btn-racing" onclick="openLevels('racing')">Bike Racing</button>
+        </div>
+    </div>
+
+    <div id="levelScreen" class="hidden">
+        <button onclick="goHome()" style="color:#94a3b8; background:none; border:none; margin:20px; font-weight:bold; font-size:16px;">← BACK TO MENU</button>
+        <div class="level-grid" id="levels"></div>
+    </div>
+
+    <div id="bubbleGame" class="hidden">
+        <h3 id="bubbleTitle" style="margin-top:10px; color:#38bdf8;">Level Mode</h3>
+        <p style="font-size:14px; margin-bottom:5px;">Time: <span id="timer" style="color:#ef4444; font-weight:bold;">20</span>s | Target: <span id="target">0</span></p>
+        <div id="bubbleArea"></div>
+        <button class="btn-game" style="width:120px; background:#ef4444; margin-top:10px;" onclick="exitGame()">EXIT</button>
+    </div>
+
+    <div id="racingGame" class="hidden">
+        <div id="road"><div id="bike"></div></div>
+        <div style="position:absolute; top:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); padding:8px 15px; border-radius:20px; font-size:14px; border:1px solid #444;">
+            🏁 Goal: <span id="dist" style="color:#22c55e; font-weight:bold;">0</span> / 500m
+        </div>
+        <div id="controls">
+            <button class="ctrl" onmousedown="moveBike(-25)" ontouchstart="moveBike(-25)">⬅️</button>
+            <button class="ctrl" style="background:rgba(239,68,68,0.6);" onmousedown="isBreaking=true" ontouchstart="isBreaking=true" onmouseup="isBreaking=false" ontouchend="isBreaking=false">🛑</button>
+            <button class="ctrl" onmousedown="moveBike(25)" ontouchstart="moveBike(25)">➡️</button>
+        </div>
+    </div>
+</div>
+
+<div id="adFooter">
+    <button class="ad-close" onclick="document.getElementById('adFooter').style.display='none'">X</button>
+    <div style="width: 320px; height: 50px; overflow: hidden;">
+        <script type="text/javascript">
+          atOptions = { 'key' : '279f9501ed0083d9566bfb0df939f507', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+        </script>
+        <script type="text/javascript" src="https://www.highperformanceformat.com/279f9501ed0083d9566bfb0df939f507/invoke.js"></script>
+    </div>
+</div>
+
+<script>
+let coins = parseInt(localStorage.getItem("coins")) || 0;
+document.getElementById("coins").innerText = coins;
+let selectedGame = "", currentLevel = 1, gameActive = false, isBreaking = false;
+let bikeX = 75, distance = 0, currentSpeed = 0;
+
+const road = document.getElementById("road");
+for(let i=0; i<6; i++) {
+    let line = document.createElement("div");
+    line.className = "line";
+    line.style.top = (i * 100) + "px";
+    road.appendChild(line);
+}
+
+function openLevels(game) {
+    selectedGame = game;
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("levelScreen").classList.remove("hidden");
+    renderLevels();
+}
+
+function renderLevels() {
+    let unlocked = parseInt(localStorage.getItem(selectedGame+"_un")) || 1;
+    let grid = document.getElementById("levels");
+    grid.innerHTML = "";
+    for(let i=1; i<=20; i++){
+        let b = document.createElement("button");
+        b.innerText = i;
+        b.className = "levelBtn " + (i <= unlocked ? "" : "locked");
+        if(i <= unlocked) b.onclick = () => startGame(i);
+        grid.appendChild(b);
+    }
+}
+
+function startGame(level) {
+    currentLevel = level;
+    document.getElementById("levelScreen").classList.add("hidden");
+    if(selectedGame === 'bubble') startBubble(level);
+    else startRacing(level);
+}
+
+let bubbleTimer, moveIntervals = [];
+function startBubble(level) {
+    document.getElementById("bubbleGame").classList.remove("hidden");
+    let area = document.getElementById("bubbleArea");
+    area.innerHTML = "";
+    moveIntervals.forEach(clearInterval);
+    moveIntervals = [];
+    let popped = 0; 
+    let total = 5 + (level * 2); 
+    document.getElementById("target").innerText = total;
+    let time = Math.max(10, 25 - level);
+    document.getElementById("timer").innerText = time;
+    bubbleTimer = setInterval(() => {
+        time--;
+        document.getElementById("timer").innerText = time;
+        if(time <= 0) { clearInterval(bubbleTimer); alert("Oops! Time Up!"); exitGame(); }
+    }, 1000);
+    for(let i=0; i<total; i++) {
+        let b = document.createElement("div");
+        b.className = "bubble";
+        let size = Math.max(25, 55 - (level * 2));
+        b.style.width = size + "px"; b.style.height = size + "px";
+        b.style.left = Math.random()*80 + "%"; b.style.top = Math.random()*80 + "%";
+        if(level > 2) {
+            let m = setInterval(() => {
+                b.style.left = Math.random()*80 + "%";
+                b.style.top = Math.random()*80 + "%";
+            }, 2500 - (level * 100));
+            moveIntervals.push(m);
+        }
+        b.onclick = () => { b.remove(); popped++; if(popped === total) { clearInterval(bubbleTimer); winGame(); } };
+        area.appendChild(b);
+    }
+}
+
+function startRacing(level) {
+    gameActive = true; distance = 0; bikeX = 75; isBreaking = false; currentSpeed = 0;
+    document.getElementById("racingGame").classList.remove("hidden");
+    requestAnimationFrame(gameLoop);
+    spawnEnemy();
+}
+
+function gameLoop() {
+    if(!gameActive) return;
+    let targetSpeed = 5 + (currentLevel * 0.4);
+    if(isBreaking) { currentSpeed = Math.max(1.0, currentSpeed - 0.5); } 
+    else { if(currentSpeed < targetSpeed) currentSpeed += 0.12; }
+    let lines = document.querySelectorAll(".line");
+    lines.forEach(l => {
+        let t = parseFloat(l.style.top) + currentSpeed;
+        l.style.top = (t > 600 ? -100 : t) + "px";
+    });
+    let enemies = document.querySelectorAll(".enemy");
+    enemies.forEach(en => {
+        let t = parseFloat(en.style.top) + (currentSpeed * 0.82);
+        en.style.top = t + "px";
+        let enX = parseInt(en.style.left);
+        if(t > 300 && t < 380 && Math.abs(enX - bikeX) < 30) gameOver();
+        if(t > 600) en.remove();
+    });
+    distance += currentSpeed / 18;
+    document.getElementById("dist").innerText = Math.floor(distance);
+    if(distance >= 500) winGame();
+    else requestAnimationFrame(gameLoop);
+}
+
+function spawnEnemy() {
+    if(!gameActive) return;
+    let en = document.createElement("div");
+    en.className = "enemy";
+    en.style.left = Math.random() > 0.5 ? "25px" : "120px";
+    en.style.top = "-100px";
+    road.appendChild(en);
+    let spawnRate = Math.max(800, 3200 - (currentLevel * 220));
+    setTimeout(spawnEnemy, spawnRate);
+}
+
+function moveBike(dir) {
+    bikeX += dir;
+    if(bikeX < 15) bikeX = 15; if(bikeX > 130) bikeX = 130;
+    document.getElementById("bike").style.left = bikeX + "px";
+}
+
+function winGame() {
+    gameActive = false; clearInterval(bubbleTimer);
+    moveIntervals.forEach(clearInterval);
+    alert("Kamaal Kar Diya! +100 Coins");
+    coins += 100; localStorage.setItem("coins", coins);
+    let unlocked = parseInt(localStorage.getItem(selectedGame+"_un")) || 1;
+    if(currentLevel == unlocked) localStorage.setItem(selectedGame+"_un", unlocked + 1);
+    exitGame();
+}
+
+function gameOver() { gameActive = false; alert("Crashed! Try Again."); exitGame(); }
+
+function goHome() {
+    document.getElementById("levelScreen").classList.add("hidden");
+    document.getElementById("home").classList.remove("hidden");
+}
+
+function exitGame() {
+    gameActive = false; clearInterval(bubbleTimer);
+    moveIntervals.forEach(clearInterval);
+    document.querySelectorAll(".enemy").forEach(e => e.remove());
+    document.getElementById("bubbleGame").classList.add("hidden");
+    document.getElementById("racingGame").classList.add("hidden");
+    document.getElementById("levelScreen").classList.remove("hidden");
+    document.getElementById("coins").innerText = coins;
+    renderLevels();
+}
+</script>
+</body>
+  </html>
+              
